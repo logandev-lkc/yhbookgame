@@ -28,6 +28,7 @@
         }
         .ui-layer { position: absolute; top: 10px; left: 10px; right: 10px; pointer-events: none; z-index: 10; display: flex; justify-content: space-between; gap: 8px; }
         .left-status { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+        .score-row { display: flex; align-items: stretch; gap: 8px; }
         .score-panel {
             background: linear-gradient(180deg, rgba(255, 250, 240, 0.95) 0%, rgba(252, 240, 217, 0.95) 100%);
             border: 2px solid rgba(139, 69, 19, 0.26);
@@ -43,6 +44,29 @@
             font-size: calc(12px * var(--text-scale));
             color: #7a4a24;
             font-weight: bold;
+        }
+        .big-timer {
+            min-width: 132px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(180deg, rgba(255, 245, 228, 0.95) 0%, rgba(250, 229, 193, 0.95) 100%);
+            border: 2px solid rgba(139, 69, 19, 0.3);
+            border-radius: 16px;
+            box-shadow: 0 6px 16px rgba(66, 36, 12, 0.16);
+            padding: 8px 12px;
+        }
+        .big-timer-label {
+            font-size: calc(12px * var(--text-scale));
+            color: #85502a;
+            font-weight: bold;
+        }
+        .big-timer-value {
+            font-size: calc(32px * var(--text-scale));
+            line-height: 1;
+            color: #5f2f0e;
+            font-weight: 900;
         }
         .restart-btn {
             pointer-events: auto;
@@ -258,15 +282,20 @@
             .status-box { font-size: calc(18px * var(--text-scale)); padding: 5px 12px; }
             .right-status .status-box { font-size: calc(14px * var(--text-scale)); }
             .score-value { font-size: calc(24px * var(--text-scale)); }
+            .big-timer-value { font-size: calc(28px * var(--text-scale)); }
         }
 
         @media (max-width: 768px) {
             .ui-layer { top: 8px; left: 8px; }
             .left-status { gap: 6px; }
+            .score-row { gap: 6px; flex-direction: column; align-items: stretch; }
             .score-panel { min-width: 110px; padding: 6px 10px; border-radius: 12px; }
             .score-label { font-size: calc(11px * var(--text-scale)); }
             .score-value { font-size: calc(20px * var(--text-scale)); }
             .group-value { font-size: calc(10px * var(--text-scale)); }
+            .big-timer { min-width: 110px; padding: 6px 8px; border-radius: 12px; }
+            .big-timer-label { font-size: calc(10px * var(--text-scale)); }
+            .big-timer-value { font-size: calc(24px * var(--text-scale)); }
             .restart-btn { font-size: calc(12px * var(--text-scale)); padding: 6px 12px; }
             .status-box { font-size: calc(15px * var(--text-scale)); padding: 4px 10px; }
             .right-status .status-box { font-size: calc(12px * var(--text-scale)); }
@@ -288,15 +317,20 @@
 
 <div class="ui-layer">
     <div class="left-status">
-        <div class="score-panel">
-            <div class="score-label">得分 SCORE</div>
-            <div class="score-value" id="scoreVal">0</div>
-            <div class="group-value" id="groupVal">目前組別：國小組</div>
+        <div class="score-row">
+            <div class="score-panel">
+                <div class="score-label">得分 SCORE</div>
+                <div class="score-value" id="scoreVal">0</div>
+                <div class="group-value" id="groupVal">目前組別：國小組</div>
+            </div>
+            <div class="big-timer">
+                <div class="big-timer-label">倒數</div>
+                <div class="big-timer-value"><span id="timeVal">45</span>s</div>
+            </div>
         </div>
         <button id="quickRestartBtn" class="restart-btn">重新挑戰</button>
     </div>
     <div class="right-status">
-        <div class="status-box">時間: <span id="timeVal">45</span>s</div>
         <div class="status-box">連擊: <span id="comboVal">0</span></div>
     </div>
 </div>
