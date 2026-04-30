@@ -26,6 +26,16 @@
             border: 5px solid #8B4513;
             box-shadow: 0 10px 30px rgba(70, 40, 10, 0.18);
         }
+        #gameCanvas.wrong-shake {
+            animation: wrongShake 180ms ease-in-out;
+        }
+        @keyframes wrongShake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-4px); }
+            50% { transform: translateX(4px); }
+            75% { transform: translateX(-3px); }
+            100% { transform: translateX(0); }
+        }
         .ui-layer { position: absolute; top: 10px; left: 10px; right: 10px; pointer-events: none; z-index: 10; display: flex; justify-content: space-between; gap: 8px; }
         .left-status { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
         .score-row { display: flex; align-items: stretch; gap: 8px; }
@@ -1328,8 +1338,48 @@ function renderTopStatus() {
 }
 
 function triggerWrongAnswerVibration() {
-    if (!("vibrate" in navigator)) return;
-    navigator.vibrate([30, 40, 30]);
+    let hasVibrationFeedback = false;
+    if ("vibrate" in navigator) {
+        hasVibrationFeedback = navigator.vibrate([30, 40, 30]) === true;
+    }
+    if (!hasVibrationFeedback) {
+        triggerWrongAnswerFallbackFeedback();
+    }
+}
+
+function triggerWrongAnswerFallbackFeedback() {
+    canvas.classList.remove("wrong-shake");
+    window.requestAnimationFrame(() => {
+        canvas.classList.add("wrong-shake");
+    });
+    window.setTimeout(() => {
+        canvas.classList.remove("wrong-shake");
+    }, 220);
+    playWrongAnswerBeep();
+}
+
+function playWrongAnswerBeep() {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+    try {
+        const audioCtx = new AudioContextClass();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.type = "square";
+        oscillator.frequency.setValueAtTime(170, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.08, audioCtx.currentTime + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.12);
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.13);
+        oscillator.onended = () => {
+            audioCtx.close().catch(() => {});
+        };
+    } catch (e) {
+        // 忽略裝置不支援或播放限制
+    }
 }
 
 function showToast(message, type = "success") {
