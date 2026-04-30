@@ -1309,6 +1309,7 @@ function handleEnd() {
         score = Math.max(0, score - stageConfig.wrongPenalty);
         renderTopStatus();
         const penaltyText = stageConfig.wrongPenalty > 0 ? `（-${stageConfig.wrongPenalty}分）` : "";
+        triggerWrongAnswerVibration();
         showToast(`分類錯誤，再試一次！${penaltyText}`, "error");
     }
 
@@ -1324,6 +1325,11 @@ function renderTopStatus() {
     timeEl.innerText = gameTime;
     comboEl.innerText = combo;
     refreshBestScoreDisplay();
+}
+
+function triggerWrongAnswerVibration() {
+    if (!("vibrate" in navigator)) return;
+    navigator.vibrate([30, 40, 30]);
 }
 
 function showToast(message, type = "success") {
