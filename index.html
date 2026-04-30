@@ -116,6 +116,37 @@
             font-weight: bold;
         }
         .button-row { margin-top: 16px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .mode-selector {
+            margin-top: 14px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .mode-btn {
+            border: 2px solid rgba(139, 69, 19, 0.3);
+            border-radius: 999px;
+            background: rgba(255, 252, 245, 0.9);
+            color: #6a3a16;
+            font-size: calc(15px * var(--text-scale));
+            font-weight: bold;
+            padding: 8px 16px;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+        .mode-btn.active {
+            border-color: #8B4513;
+            background: linear-gradient(180deg, #ffd69e 0%, #f2b56f 100%);
+            color: #4a250a;
+            box-shadow: 0 4px 10px rgba(80, 35, 8, 0.2);
+        }
+        .mode-note {
+            margin-top: 8px;
+            font-size: calc(14px * var(--text-scale));
+            color: #6d3f1a;
+            text-align: center;
+            font-weight: bold;
+        }
         .primary-btn {
             border: none;
             border-radius: 999px;
@@ -200,12 +231,17 @@
             <div class="guide-intro">準備好一起挑戰圖書分類任務了嗎？</div>
             <div class="guide-grid">
                 <div class="guide-row">📘 把左邊書本拖到右邊正確分類櫃。</div>
-                <div class="guide-row">⭐ 每答對 +10 分，連續答對加更多分。</div>
+                <div class="guide-row" id="scoreRuleRow">⭐ 每答對 +10 分，連續答對加更多分。</div>
                 <div class="guide-row">⏱️ 遊戲是 <strong>60 秒倒數</strong>，時間到就結算。</div>
-                <div class="guide-row">🚀 分數越高，難度越高。</div>
+                <div class="guide-row" id="difficultyRow">🚀 分數越高，難度越高。</div>
             </div>
-            <div class="guide-tip">小提醒：放到分類櫃外不扣分，放心再試一次！</div>
+            <div class="guide-tip" id="guideTip">小提醒：放到分類櫃外不扣分，放心再試一次！</div>
         </div>
+        <div class="mode-selector">
+            <button id="elementaryModeBtn" class="mode-btn active">國小組</button>
+            <button id="juniorModeBtn" class="mode-btn">國中組</button>
+        </div>
+        <div class="mode-note" id="modeNote">國小組：兩階段，僅在 50 分後關閉分類色提示。</div>
         <div class="button-row">
             <button id="startBtn" class="primary-btn">開始遊戲</button>
         </div>
@@ -234,7 +270,7 @@ const categories = [
     { id: 600, name: "史地類", color: "#8FAADC", icon: "🗺️", hint: "中國歷史、地理" }
 ];
 
-const bookTemplates = [
+const elementaryBookTemplates = [
     { title: "恐龍大百科", cat: 300 },
     { title: "神祕的小行星", cat: 300 },
     { title: "昆蟲觀察日記", cat: 300 },
@@ -268,6 +304,32 @@ const bookTemplates = [
     { title: "河川與山脈", cat: 600 },
     { title: "歷史人物小傳", cat: 600 }
 ];
+const juniorBookTemplates = [
+    { title: "遺傳與基因工程導論", cat: 300, difficulty: "advanced" },
+    { title: "化學鍵與分子結構", cat: 300, difficulty: "advanced" },
+    { title: "板塊運動與地震帶分析", cat: 300, difficulty: "advanced" },
+    { title: "能源轉型與碳排放趨勢", cat: 300, difficulty: "advanced" },
+    { title: "光合作用與生態系平衡", cat: 300, difficulty: "basic" },
+    { title: "從細胞到器官系統", cat: 300, difficulty: "basic" },
+    { title: "文言短篇選讀", cat: 800, difficulty: "basic" },
+    { title: "新詩的意象與節奏", cat: 800, difficulty: "advanced" },
+    { title: "小說敘事觀點解析", cat: 800, difficulty: "advanced" },
+    { title: "寓言與諷刺寫作", cat: 800, difficulty: "basic" },
+    { title: "古典散文與修辭", cat: 800, difficulty: "advanced" },
+    { title: "名著改編劇本閱讀", cat: 800, difficulty: "basic" },
+    { title: "透視原理與空間構圖", cat: 900, difficulty: "advanced" },
+    { title: "電影配樂與敘事節奏", cat: 900, difficulty: "advanced" },
+    { title: "美術史中的風格演變", cat: 900, difficulty: "advanced" },
+    { title: "版畫技法與材料應用", cat: 900, difficulty: "basic" },
+    { title: "視覺傳達與海報設計", cat: 900, difficulty: "basic" },
+    { title: "音樂會聆賞筆記", cat: 900, difficulty: "basic" },
+    { title: "近代戰爭與科技革新", cat: 600, difficulty: "advanced" },
+    { title: "大航海時代全球交流", cat: 600, difficulty: "advanced" },
+    { title: "冷戰格局與地緣政治", cat: 600, difficulty: "advanced" },
+    { title: "台灣地形與產業分布", cat: 600, difficulty: "basic" },
+    { title: "朝代制度比較研究", cat: 600, difficulty: "advanced" },
+    { title: "都市化與人口遷移", cat: 600, difficulty: "basic" }
+];
 
 /** 遊戲變數 **/
 const canvas = document.getElementById('gameCanvas');
@@ -286,6 +348,7 @@ let bestCombo = 0;
 let correctCount = 0;
 let wrongCount = 0;
 let lastBookTitle = "";
+let gameMode = "elementary";
 const TEXT_SCALE = 1.15;
 const scaledFont = (size) => Math.round(size * TEXT_SCALE);
 
@@ -304,6 +367,74 @@ const endOverlayEl = document.getElementById('endOverlay');
 const startBtnEl = document.getElementById('startBtn');
 const restartBtnEl = document.getElementById('restartBtn');
 const quickRestartBtnEl = document.getElementById('quickRestartBtn');
+const elementaryModeBtnEl = document.getElementById('elementaryModeBtn');
+const juniorModeBtnEl = document.getElementById('juniorModeBtn');
+const modeNoteEl = document.getElementById('modeNote');
+const guideTipEl = document.getElementById('guideTip');
+const scoreRuleRowEl = document.getElementById('scoreRuleRow');
+const difficultyRowEl = document.getElementById('difficultyRow');
+
+function getCurrentStage() {
+    if (gameMode === "junior") {
+        if (score < 50) return 1;
+        if (score <= 100) return 2;
+        return 3;
+    }
+    return score < 50 ? 1 : 2;
+}
+
+function getStageConfig() {
+    const stage = getCurrentStage();
+    if (gameMode !== "junior") {
+        return {
+            stage,
+            showCategoryColor: stage === 1,
+            showCategoryChip: true,
+            showShelfHint: true,
+            useBookIdInShelf: true,
+            baseScore: 10,
+            comboStep: 2,
+            wrongPenalty: 0,
+            advancedRatio: 0
+        };
+    }
+    if (stage === 1) {
+        return { stage, showCategoryColor: true, showCategoryChip: true, showShelfHint: true, useBookIdInShelf: true, baseScore: 9, comboStep: 1.5, wrongPenalty: 2, advancedRatio: 0.1 };
+    }
+    if (stage === 2) {
+        return { stage, showCategoryColor: false, showCategoryChip: true, showShelfHint: true, useBookIdInShelf: true, baseScore: 9, comboStep: 1.5, wrongPenalty: 4, advancedRatio: 0.4 };
+    }
+    return { stage, showCategoryColor: false, showCategoryChip: true, showShelfHint: false, useBookIdInShelf: true, baseScore: 8, comboStep: 1.5, wrongPenalty: 5, advancedRatio: 0.75 };
+}
+
+function pickTemplateByDifficulty(pool, advancedRatio) {
+    if (gameMode !== "junior") {
+        return pool[Math.floor(Math.random() * pool.length)];
+    }
+    const advancedPool = pool.filter((book) => book.difficulty === "advanced");
+    const basicPool = pool.filter((book) => book.difficulty !== "advanced");
+    const useAdvanced = advancedPool.length > 0 && Math.random() < advancedRatio;
+    const selectedPool = useAdvanced ? advancedPool : (basicPool.length > 0 ? basicPool : pool);
+    return selectedPool[Math.floor(Math.random() * selectedPool.length)];
+}
+
+function updateModeUI() {
+    const isJunior = gameMode === "junior";
+    elementaryModeBtnEl.classList.toggle("active", !isJunior);
+    juniorModeBtnEl.classList.toggle("active", isJunior);
+    modeNoteEl.innerText = isJunior
+        ? "國中組：三段提示規則，50 分起逐步關閉提示。"
+        : "國小組：兩階段，僅在 50 分後關閉分類色提示。";
+    guideTipEl.innerText = isJunior
+        ? "小提醒：國中組答錯會扣分，先判斷再放置會更穩。"
+        : "小提醒：放到分類櫃外不扣分，放心再試一次！";
+    scoreRuleRowEl.innerText = isJunior
+        ? "⭐ 答對有連擊加分，答錯會扣分。"
+        : "⭐ 每答對 +10 分，連續答對加更多分。";
+    difficultyRowEl.innerText = isJunior
+        ? "🚀 0-50 全資訊；50-100 關分類色；100+ 關書櫃 hint。"
+        : "🚀 0-50 全資訊；50+ 關掉分類色提示。";
+}
 
 function getLayoutMode() {
     if (width <= 768) return "mobile";
@@ -395,9 +526,11 @@ function init() {
 /** 產生一本新書 **/
 function spawnBook() {
     if (!gameRunning) return;
-    const availableBooks = bookTemplates.filter(book => book.title !== lastBookTitle);
-    const sourceBooks = availableBooks.length > 0 ? availableBooks : bookTemplates;
-    const template = sourceBooks[Math.floor(Math.random() * sourceBooks.length)];
+    const stageConfig = getStageConfig();
+    const activePool = gameMode === "junior" ? juniorBookTemplates : elementaryBookTemplates;
+    const availableBooks = activePool.filter(book => book.title !== lastBookTitle);
+    const sourceBooks = availableBooks.length > 0 ? availableBooks : activePool;
+    const template = pickTemplateByDifficulty(sourceBooks, stageConfig.advancedRatio);
     lastBookTitle = template.title;
     const bookW = gameConfig.bookW;
     const bookH = gameConfig.bookH;
@@ -452,6 +585,7 @@ function draw() {
     }
     
     // 3. 畫分類櫃
+    const stageConfig = getStageConfig();
     categories.forEach((cat, i) => {
         const shelfX = width * gameConfig.shelfXRatio;
         const shelfW = width * gameConfig.shelfWRatio;
@@ -476,9 +610,12 @@ function draw() {
 
         ctx.fillStyle = "#333";
         ctx.font = `bold ${gameConfig.shelfTitleFont}px Arial`;
-        ctx.fillText(`${cat.icon} ${cat.id} ${cat.name}`, shelfX + gameConfig.titlePaddingX, shelfY + gameConfig.shelfTitleOffsetY);
-        ctx.font = `${gameConfig.shelfHintFont}px Arial`;
-        ctx.fillText(cat.hint, shelfX + gameConfig.titlePaddingX, shelfY + shelfH - gameConfig.shelfHintOffsetY);
+        const shelfTitlePrefix = stageConfig.useBookIdInShelf ? `${cat.id} ` : "";
+        ctx.fillText(`${cat.icon} ${shelfTitlePrefix}${cat.name}`, shelfX + gameConfig.titlePaddingX, shelfY + gameConfig.shelfTitleOffsetY);
+        if (stageConfig.showShelfHint) {
+            ctx.font = `${gameConfig.shelfHintFont}px Arial`;
+            ctx.fillText(cat.hint, shelfX + gameConfig.titlePaddingX, shelfY + shelfH - gameConfig.shelfHintOffsetY);
+        }
         
         cat.rect = { x: shelfX, y: shelfY, w: shelfW, h: shelfH };
     });
@@ -524,8 +661,8 @@ function draw() {
         ctx.fill();
         ctx.stroke();
 
-        // 依分數調整書本提示難度
-        const stage = score < 50 ? 1 : (score <= 100 ? 2 : 3);
+        // 依分數與模式調整書本提示難度
+        const stageConfig = getStageConfig();
 
         // 可愛封面配色（依分類或固定色）
         const category = categories.find((c) => c.id === currentBook.cat);
@@ -537,7 +674,7 @@ function draw() {
         };
         const fixedPalette = ["#d9c2ff", "#9a7be6"]; // 50~100 分統一色（刻意避開分類色）
         const [coverStart, coverEnd] =
-            stage === 1
+            stageConfig.showCategoryColor
                 ? (coverPalette[currentBook.cat] || ["#d0ddff", "#95b2ef"])
                 : fixedPalette;
         const coverGradient = ctx.createLinearGradient(coverX, coverY, coverX + coverW, coverY + currentBook.h);
@@ -642,13 +779,13 @@ function draw() {
             ctx.fillText(line, startX, y, maxTextWidth);
         });
 
-        // 底部分類標籤（100 分以上隱藏，只留書名）
-        if (category && stage <= 2) {
+        // 底部分類標籤（高階段隱藏，只留書名）
+        if (category && stageConfig.showCategoryChip) {
             const chipX = coverX + currentBook.w * 0.22;
             const chipY = coverY + currentBook.h * 0.8;
             const chipW = coverW * 0.55;
             const chipH = currentBook.h * 0.13;
-            ctx.fillStyle = stage === 1 ? "rgba(255,255,255,0.86)" : "rgba(255,255,255,0.92)";
+            ctx.fillStyle = stageConfig.stage === 1 ? "rgba(255,255,255,0.86)" : "rgba(255,255,255,0.92)";
             ctx.beginPath();
             ctx.roundRect(chipX, chipY, chipW, chipH, 9);
             ctx.fill();
@@ -703,10 +840,15 @@ function handleEnd() {
             droppedOnShelf = true;
             
             if (currentBook.cat === cat.id) {
+                const stageConfig = getStageConfig();
                 correctCount += 1;
                 combo += 1;
                 bestCombo = Math.max(bestCombo, combo);
-                score += 10 + ((combo - 1) * 2);
+                let gain = stageConfig.baseScore + ((combo - 1) * stageConfig.comboStep);
+                if (gameMode === "junior" && stageConfig.stage === 4) {
+                    gain += gameTime >= 20 ? 2 : 1;
+                }
+                score += Math.round(gain);
                 renderTopStatus();
                 showToast(`答對了！連擊 x${combo}`, "success");
                 spawnBook();
@@ -716,10 +858,13 @@ function handleEnd() {
     });
 
     if (!matched && droppedOnShelf) {
+        const stageConfig = getStageConfig();
         wrongCount += 1;
         combo = 0;
+        score = Math.max(0, score - stageConfig.wrongPenalty);
         renderTopStatus();
-        showToast("分類錯誤，再試一次！", "error");
+        const penaltyText = stageConfig.wrongPenalty > 0 ? `（-${stageConfig.wrongPenalty}分）` : "";
+        showToast(`分類錯誤，再試一次！${penaltyText}`, "error");
     }
 
     if (!matched) {
@@ -828,10 +973,21 @@ window.addEventListener('resize', init);
 startBtnEl.addEventListener('click', startGame);
 restartBtnEl.addEventListener('click', backToStartOverlay);
 quickRestartBtnEl.addEventListener('click', backToStartOverlay);
+elementaryModeBtnEl.addEventListener('click', () => {
+    if (gameRunning) return;
+    gameMode = "elementary";
+    updateModeUI();
+});
+juniorModeBtnEl.addEventListener('click', () => {
+    if (gameRunning) return;
+    gameMode = "junior";
+    updateModeUI();
+});
 
 // 啟動
 init();
 renderTopStatus();
+updateModeUI();
 bestScoreEl.innerText = Number(localStorage.getItem("libraryGameBestScore") || 0);
 draw();
 
