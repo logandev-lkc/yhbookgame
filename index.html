@@ -556,7 +556,7 @@ let isDragging = false;
 let offsetX, offsetY;
 let gameConfig = {};
 let gameRunning = false;
-let gameTime = 60;
+let gameTime = DEFAULT_ADMIN_CONFIG.gameDuration;
 let timerId = null;
 let combo = 0;
 let bestCombo = 0;
@@ -569,6 +569,7 @@ let questionBanks = {
     elementary: structuredClone(elementaryBookTemplates),
     junior: structuredClone(juniorBookTemplates)
 };
+let wrongBeepAudioCtx = null;
 const TEXT_SCALE = 1.15;
 const scaledFont = (size) => Math.round(size * TEXT_SCALE);
 
@@ -1359,10 +1360,33 @@ function triggerWrongAnswerFallbackFeedback() {
 }
 
 function playWrongAnswerBeep() {
+    const audioCtx = getWrongBeepAudioContext();
+    if (!audioCtx) return;
+    if (audioCtx.state === "suspended") {
+        audioCtx.resume().then(() => {
+            playWrongAnswerBeepTone(audioCtx);
+        }).catch(() => {
+            // 忽略裝置播放限制
+        });
+        return;
+    }
+    playWrongAnswerBeepTone(audioCtx);
+}
+
+function getWrongBeepAudioContext() {
+    if (wrongBeepAudioCtx) return wrongBeepAudioCtx;
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextClass) return;
+    if (!AudioContextClass) return null;
     try {
-        const audioCtx = new AudioContextClass();
+        wrongBeepAudioCtx = new AudioContextClass();
+        return wrongBeepAudioCtx;
+    } catch (e) {
+        return null;
+    }
+}
+
+function playWrongAnswerBeepTone(audioCtx) {
+    try {
         const oscillator = audioCtx.createOscillator();
         const gainNode = audioCtx.createGain();
         oscillator.type = "square";
@@ -1374,11 +1398,8 @@ function playWrongAnswerBeep() {
         gainNode.connect(audioCtx.destination);
         oscillator.start();
         oscillator.stop(audioCtx.currentTime + 0.13);
-        oscillator.onended = () => {
-            audioCtx.close().catch(() => {});
-        };
     } catch (e) {
-        // 忽略裝置不支援或播放限制
+        // 忽略裝置播放限制
     }
 }
 
