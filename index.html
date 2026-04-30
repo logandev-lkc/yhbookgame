@@ -125,6 +125,143 @@
         .overlay-card h2 { margin: 0 0 12px; color: #8B4513; font-size: calc(32px * var(--text-scale)); }
         .overlay-card p { margin: 6px 0; color: #5d3b20; line-height: 1.5; font-size: calc(17px * var(--text-scale)); }
         .overlay-card .result-line { font-weight: bold; font-size: calc(18px * var(--text-scale)); }
+        .end-result-card {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(160deg, #fffdf8 0%, #ffeecd 100%);
+        }
+        .end-result-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at 15% 20%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 46%);
+        }
+        .end-result-card .result-head {
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        .result-badge {
+            display: inline-block;
+            margin: 0 auto 8px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-weight: 900;
+            letter-spacing: 0.04em;
+            color: #fff;
+            background: linear-gradient(180deg, #b2783c 0%, #8a4d18 100%);
+            box-shadow: 0 4px 10px rgba(73, 37, 10, 0.25);
+        }
+        .end-score {
+            margin: 8px auto 12px;
+            font-weight: 900;
+            color: #5f2f0e;
+            font-size: calc(40px * var(--text-scale));
+            line-height: 1;
+            position: relative;
+            z-index: 1;
+        }
+        .end-score .score-label-small {
+            display: block;
+            font-size: calc(14px * var(--text-scale));
+            font-weight: bold;
+            color: #7d4b27;
+            margin-bottom: 5px;
+        }
+        .result-note {
+            margin: 4px 0 12px;
+            color: #6a3c16;
+            font-size: calc(16px * var(--text-scale));
+            font-weight: bold;
+            position: relative;
+            z-index: 1;
+        }
+        .result-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 8px;
+            position: relative;
+            z-index: 1;
+        }
+        .result-stat-item {
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(139, 69, 19, 0.2);
+            border-radius: 12px;
+            padding: 10px 8px;
+        }
+        .result-stat-label {
+            display: block;
+            color: #7a4823;
+            font-size: calc(12px * var(--text-scale));
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        .result-stat-value {
+            display: block;
+            color: #5e2f0f;
+            font-size: calc(22px * var(--text-scale));
+            font-weight: 900;
+            line-height: 1.1;
+        }
+        .tier-s .result-badge,
+        .tier-splus .result-badge {
+            background: linear-gradient(180deg, #7e5af6 0%, #5f2dc9 100%);
+        }
+        .tier-s::after,
+        .tier-splus::after {
+            content: "";
+            position: absolute;
+            inset: -20%;
+            pointer-events: none;
+            background: conic-gradient(from 0deg, rgba(255,255,255,0) 0deg, rgba(255,232,171,0.35) 80deg, rgba(255,255,255,0) 160deg);
+            animation: tierGlowSpin 6s linear infinite;
+        }
+        .tier-splus {
+            box-shadow: 0 0 0 2px rgba(255, 211, 95, 0.55), 0 16px 44px rgba(99, 51, 196, 0.34);
+        }
+        .tier-splus .result-badge {
+            background: linear-gradient(180deg, #ffcf4e 0%, #ff8f2f 100%);
+            color: #572b0f;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+        }
+        .tier-splus .end-score {
+            color: #5b2b0e;
+            text-shadow: 0 0 18px rgba(255, 213, 120, 0.55);
+        }
+        @keyframes tierGlowSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .confetti-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 3;
+        }
+        .confetti-piece {
+            position: absolute;
+            top: -18px;
+            width: 10px;
+            height: 16px;
+            opacity: 0.92;
+            border-radius: 2px;
+            animation: confettiFall linear forwards;
+            transform-origin: center;
+        }
+        @keyframes confettiFall {
+            0% {
+                transform: translate3d(0, -10px, 0) rotate(0deg);
+                opacity: 0;
+            }
+            10% { opacity: 1; }
+            100% {
+                transform: translate3d(var(--drift, 0px), 110vh, 0) rotate(var(--spin, 360deg));
+                opacity: 0;
+            }
+        }
         .game-guide {
             margin: 12px auto 0;
             width: min(520px, 88vw);
@@ -313,6 +450,8 @@
             .overlay-card h2 { font-size: calc(22px * var(--text-scale)); }
             .overlay-card p { font-size: calc(14px * var(--text-scale)); }
             .overlay-card .result-line { font-size: calc(16px * var(--text-scale)); }
+            .result-stats { grid-template-columns: 1fr; }
+            .end-score { font-size: calc(34px * var(--text-scale)); }
             .guide-intro { font-size: calc(14px * var(--text-scale)); margin-bottom: 8px; }
             .guide-grid { grid-template-columns: 1fr; gap: 6px; }
             .guide-row { font-size: calc(13px * var(--text-scale)); padding: 8px 9px; }
@@ -372,12 +511,29 @@
 </div>
 
 <div id="endOverlay" class="overlay hidden">
-    <div class="overlay-card">
-        <h2>挑戰結束</h2>
-        <p class="result-line">本次得分：<span id="finalScoreVal">0</span></p>
-        <p>正確：<span id="correctVal">0</span> 次 ｜ 錯誤：<span id="wrongVal">0</span> 次</p>
-        <p>命中率：<span id="accuracyVal">0</span>% ｜ 最佳連擊：<span id="bestComboVal">0</span></p>
-        <p>歷史最高分：<span id="bestScoreVal">0</span></p>
+    <div id="endResultCard" class="overlay-card end-result-card">
+        <div id="confettiLayer" class="confetti-layer"></div>
+        <div class="result-head">
+            <div id="endBadgeLine" class="result-badge">C 級</div>
+            <h2 id="endTitle">挑戰結束</h2>
+        </div>
+        <p id="resultNote" class="result-note">再多玩幾輪，很快就能明顯進步！</p>
+        <div class="end-score">
+            <span class="score-label-small">本次得分</span>
+            <span id="finalScoreVal">0</span>
+        </div>
+        <div class="result-stats">
+            <div class="result-stat-item">
+                <span class="result-stat-label">答對題數</span>
+                <span class="result-stat-value"><span id="correctVal">0</span></span>
+            </div>
+            <div class="result-stat-item">
+                <span class="result-stat-label">答錯題數</span>
+                <span class="result-stat-value"><span id="wrongVal">0</span></span>
+            </div>
+        </div>
+        <span id="bestScoreVal" style="display:none">0</span>
+        <p style="display:none">命中率：<span id="accuracyVal">0</span>% ｜ 最佳連擊：<span id="bestComboVal">0</span></p>
         <div class="button-row">
             <button id="restartBtn" class="primary-btn">重新挑戰</button>
         </div>
@@ -423,6 +579,46 @@
             <div class="admin-field">
                 <label for="adminJunWrongInput">答錯扣分</label>
                 <input id="adminJunWrongInput" type="number" min="0" max="20" step="1">
+            </div>
+        </div>
+
+        <div class="admin-section-title">國小組結算門檻（B / A / S / S+）</div>
+        <div class="admin-grid">
+            <div class="admin-field">
+                <label for="adminEleTierBInput">B 級最低分</label>
+                <input id="adminEleTierBInput" type="number" min="0" max="999" step="1">
+            </div>
+            <div class="admin-field">
+                <label for="adminEleTierAInput">A 級最低分</label>
+                <input id="adminEleTierAInput" type="number" min="0" max="999" step="1">
+            </div>
+            <div class="admin-field">
+                <label for="adminEleTierSInput">S 級最低分</label>
+                <input id="adminEleTierSInput" type="number" min="0" max="999" step="1">
+            </div>
+            <div class="admin-field">
+                <label for="adminEleTierSPlusInput">S+ 級最低分</label>
+                <input id="adminEleTierSPlusInput" type="number" min="0" max="999" step="1">
+            </div>
+        </div>
+
+        <div class="admin-section-title">國中組結算門檻（B / A / S / S+）</div>
+        <div class="admin-grid">
+            <div class="admin-field">
+                <label for="adminJunTierBInput">B 級最低分</label>
+                <input id="adminJunTierBInput" type="number" min="0" max="999" step="1">
+            </div>
+            <div class="admin-field">
+                <label for="adminJunTierAInput">A 級最低分</label>
+                <input id="adminJunTierAInput" type="number" min="0" max="999" step="1">
+            </div>
+            <div class="admin-field">
+                <label for="adminJunTierSInput">S 級最低分</label>
+                <input id="adminJunTierSInput" type="number" min="0" max="999" step="1">
+            </div>
+            <div class="admin-field">
+                <label for="adminJunTierSPlusInput">S+ 級最低分</label>
+                <input id="adminJunTierSPlusInput" type="number" min="0" max="999" step="1">
             </div>
         </div>
 
@@ -540,6 +736,10 @@ const DEFAULT_ADMIN_CONFIG = {
     scoring: {
         elementary: { baseScore: 10, comboStep: 2, wrongPenalty: 0 },
         junior: { baseScore: 9, comboStep: 1.5, wrongPenalty: 4 }
+    },
+    tiers: {
+        elementary: { b: 100, a: 150, s: 250, sPlus: 350 },
+        junior: { b: 100, a: 170, s: 250, sPlus: 350 }
     }
 };
 const ADMIN_CONFIG_STORAGE_KEY = "libraryGameAdminConfig_v1";
@@ -570,6 +770,7 @@ let questionBanks = {
     junior: structuredClone(juniorBookTemplates)
 };
 let wrongBeepAudioCtx = null;
+let confettiLoopTimer = null;
 const TEXT_SCALE = 1.15;
 const scaledFont = (size) => Math.round(size * TEXT_SCALE);
 
@@ -577,6 +778,11 @@ const scoreEl = document.getElementById('scoreVal');
 const groupEl = document.getElementById('groupVal');
 const timeEl = document.getElementById('timeVal');
 const comboEl = document.getElementById('comboVal');
+const endTitleEl = document.getElementById('endTitle');
+const resultNoteEl = document.getElementById('resultNote');
+const endBadgeLineEl = document.getElementById('endBadgeLine');
+const endResultCardEl = document.getElementById('endResultCard');
+const confettiLayerEl = document.getElementById('confettiLayer');
 const finalScoreEl = document.getElementById('finalScoreVal');
 const correctEl = document.getElementById('correctVal');
 const wrongEl = document.getElementById('wrongVal');
@@ -605,6 +811,14 @@ const adminEleWrongInputEl = document.getElementById('adminEleWrongInput');
 const adminJunBaseInputEl = document.getElementById('adminJunBaseInput');
 const adminJunComboInputEl = document.getElementById('adminJunComboInput');
 const adminJunWrongInputEl = document.getElementById('adminJunWrongInput');
+const adminEleTierBInputEl = document.getElementById('adminEleTierBInput');
+const adminEleTierAInputEl = document.getElementById('adminEleTierAInput');
+const adminEleTierSInputEl = document.getElementById('adminEleTierSInput');
+const adminEleTierSPlusInputEl = document.getElementById('adminEleTierSPlusInput');
+const adminJunTierBInputEl = document.getElementById('adminJunTierBInput');
+const adminJunTierAInputEl = document.getElementById('adminJunTierAInput');
+const adminJunTierSInputEl = document.getElementById('adminJunTierSInput');
+const adminJunTierSPlusInputEl = document.getElementById('adminJunTierSPlusInput');
 const adminEleQuestionsEl = document.getElementById('adminEleQuestions');
 const adminJunQuestionsEl = document.getElementById('adminJunQuestions');
 const adminSaveBtnEl = document.getElementById('adminSaveBtn');
@@ -644,6 +858,14 @@ function loadAdminData() {
             }
             if (jun && typeof jun.baseScore === "number" && typeof jun.comboStep === "number" && typeof jun.wrongPenalty === "number") {
                 adminConfig.scoring.junior = { baseScore: jun.baseScore, comboStep: jun.comboStep, wrongPenalty: jun.wrongPenalty };
+            }
+            const tierEle = parsed?.tiers?.elementary;
+            const tierJun = parsed?.tiers?.junior;
+            if (isValidTierConfig(tierEle)) {
+                adminConfig.tiers.elementary = { ...tierEle };
+            }
+            if (isValidTierConfig(tierJun)) {
+                adminConfig.tiers.junior = { ...tierJun };
             }
         }
 
@@ -705,6 +927,14 @@ function openAdminPanel() {
     adminJunBaseInputEl.value = adminConfig.scoring.junior.baseScore;
     adminJunComboInputEl.value = adminConfig.scoring.junior.comboStep;
     adminJunWrongInputEl.value = adminConfig.scoring.junior.wrongPenalty;
+    adminEleTierBInputEl.value = adminConfig.tiers.elementary.b;
+    adminEleTierAInputEl.value = adminConfig.tiers.elementary.a;
+    adminEleTierSInputEl.value = adminConfig.tiers.elementary.s;
+    adminEleTierSPlusInputEl.value = adminConfig.tiers.elementary.sPlus;
+    adminJunTierBInputEl.value = adminConfig.tiers.junior.b;
+    adminJunTierAInputEl.value = adminConfig.tiers.junior.a;
+    adminJunTierSInputEl.value = adminConfig.tiers.junior.s;
+    adminJunTierSPlusInputEl.value = adminConfig.tiers.junior.sPlus;
     adminEleQuestionsEl.value = serializeQuestionLines(questionBanks.elementary, false);
     adminJunQuestionsEl.value = serializeQuestionLines(questionBanks.junior, true);
     adminOverlayEl.classList.remove("hidden");
@@ -736,6 +966,14 @@ function saveAdminSettings() {
     const junBaseScore = Number(adminJunBaseInputEl.value);
     const junComboStep = Number(adminJunComboInputEl.value);
     const junWrongPenalty = Number(adminJunWrongInputEl.value);
+    const eleTierB = Number(adminEleTierBInputEl.value);
+    const eleTierA = Number(adminEleTierAInputEl.value);
+    const eleTierS = Number(adminEleTierSInputEl.value);
+    const eleTierSPlus = Number(adminEleTierSPlusInputEl.value);
+    const junTierB = Number(adminJunTierBInputEl.value);
+    const junTierA = Number(adminJunTierAInputEl.value);
+    const junTierS = Number(adminJunTierSInputEl.value);
+    const junTierSPlus = Number(adminJunTierSPlusInputEl.value);
 
     if (!Number.isFinite(gameDuration) || gameDuration < 20 || gameDuration > 300) {
         adminErrorEl.innerText = "遊戲秒數請填 20~300。";
@@ -744,6 +982,16 @@ function saveAdminSettings() {
     const scoreValues = [eleBaseScore, eleComboStep, eleWrongPenalty, junBaseScore, junComboStep, junWrongPenalty];
     if (scoreValues.some((v) => !Number.isFinite(v) || v < 0)) {
         adminErrorEl.innerText = "計分設定請輸入有效數字。";
+        return;
+    }
+    const eleTierConfig = { b: eleTierB, a: eleTierA, s: eleTierS, sPlus: eleTierSPlus };
+    const junTierConfig = { b: junTierB, a: junTierA, s: junTierS, sPlus: junTierSPlus };
+    if (!isValidTierConfig(eleTierConfig)) {
+        adminErrorEl.innerText = "國小組門檻需符合：S+ > S > A > B >= 0。";
+        return;
+    }
+    if (!isValidTierConfig(junTierConfig)) {
+        adminErrorEl.innerText = "國中組門檻需符合：S+ > S > A > B >= 0。";
         return;
     }
 
@@ -771,6 +1019,20 @@ function saveAdminSettings() {
                 comboStep: junComboStep,
                 wrongPenalty: Math.round(junWrongPenalty)
             }
+        },
+        tiers: {
+            elementary: {
+                b: Math.round(eleTierB),
+                a: Math.round(eleTierA),
+                s: Math.round(eleTierS),
+                sPlus: Math.round(eleTierSPlus)
+            },
+            junior: {
+                b: Math.round(junTierB),
+                a: Math.round(junTierA),
+                s: Math.round(junTierS),
+                sPlus: Math.round(junTierSPlus)
+            }
         }
     };
     questionBanks = {
@@ -797,6 +1059,14 @@ function resetAdminSettings() {
     renderTopStatus();
     closeAdminPanel();
     showToast("已恢復預設設定", "success");
+}
+
+function isValidTierConfig(tierConfig) {
+    if (!tierConfig) return false;
+    const { b, a, s, sPlus } = tierConfig;
+    const values = [b, a, s, sPlus];
+    if (values.some((v) => !Number.isFinite(v) || v < 0)) return false;
+    return sPlus > s && s > a && a > b;
 }
 
 function getBestScoreStorageKey() {
@@ -1414,6 +1684,7 @@ function showToast(message, type = "success") {
 }
 
 function startGame() {
+    stopResultConfetti();
     score = 0;
     combo = 0;
     bestCombo = 0;
@@ -1448,7 +1719,14 @@ function endGame() {
     const accuracy = total === 0 ? 0 : Math.round((correctCount / total) * 100);
     const bestScore = Math.max(score, getCurrentModeBestScore());
     localStorage.setItem(getBestScoreStorageKey(), String(bestScore));
+    const resultTier = getResultTier(score);
 
+    endTitleEl.innerText = resultTier.title;
+    endBadgeLineEl.innerText = `${resultTier.badge} 級`;
+    resultNoteEl.innerText = resultTier.note;
+    endResultCardEl.classList.remove("tier-c", "tier-b", "tier-a", "tier-s", "tier-splus");
+    endResultCardEl.classList.add(resultTier.tierClass);
+    triggerResultConfetti(resultTier.tierClass);
     finalScoreEl.innerText = score;
     correctEl.innerText = correctCount;
     wrongEl.innerText = wrongCount;
@@ -1456,6 +1734,66 @@ function endGame() {
     bestComboEl.innerText = bestCombo;
     bestScoreEl.innerText = bestScore;
     endOverlayEl.classList.remove("hidden");
+}
+
+function getResultTier(finalScore) {
+    const dynamicThresholds = gameMode === "junior" ? adminConfig.tiers.junior : adminConfig.tiers.elementary;
+    const tiers = gameMode === "junior"
+        ? [
+            { min: dynamicThresholds.sPlus, title: "學術級分類達人", badge: "S+", note: "判讀超穩，已達進階館員水準！", tierClass: "tier-splus" },
+            { min: dynamicThresholds.s, title: "高階分類高手", badge: "S", note: "速度與準確兼具，表現非常亮眼！", tierClass: "tier-s" },
+            { min: dynamicThresholds.a, title: "進階挑戰成功", badge: "A", note: "已掌握關鍵分類邏輯，繼續衝高分！", tierClass: "tier-a" },
+            { min: dynamicThresholds.b, title: "分類能力穩定", badge: "B", note: "基礎穩定，下一步加強連擊節奏！", tierClass: "tier-b" },
+            { min: 0, title: "持續練習中", badge: "C", note: "再多玩幾輪，很快就能明顯進步！", tierClass: "tier-c" }
+        ]
+        : [
+            { min: dynamicThresholds.sPlus, title: "小小圖書館長", badge: "S+", note: "分類超快又超準，太厲害了！", tierClass: "tier-splus" },
+            { min: dynamicThresholds.s, title: "圖書分類達人", badge: "S", note: "已經是高手等級，表現很穩！", tierClass: "tier-s" },
+            { min: dynamicThresholds.a, title: "優秀小館員", badge: "A", note: "判斷很不錯，再衝一點就是達人！", tierClass: "tier-a" },
+            { min: dynamicThresholds.b, title: "分類小幫手", badge: "B", note: "基礎越來越好，繼續練習就會更強！", tierClass: "tier-b" },
+            { min: 0, title: "新手冒險中", badge: "C", note: "先熟悉題目，下一輪一定更好！", tierClass: "tier-c" }
+        ];
+    return tiers.find((tier) => finalScore >= tier.min) || tiers[tiers.length - 1];
+}
+
+function triggerResultConfetti(tierClass) {
+    stopResultConfetti();
+    confettiLayerEl.innerHTML = "";
+    if (tierClass !== "tier-s" && tierClass !== "tier-splus") return;
+    spawnConfettiBatch(tierClass);
+    const loopMs = tierClass === "tier-splus" ? 900 : 1200;
+    confettiLoopTimer = window.setInterval(() => {
+        spawnConfettiBatch(tierClass);
+    }, loopMs);
+}
+
+function spawnConfettiBatch(tierClass) {
+    const burstCount = tierClass === "tier-splus" ? 44 : 26;
+    const colors = tierClass === "tier-splus"
+        ? ["#FFD95E", "#FF8F4F", "#7E5AF6", "#62D7FF", "#FFFFFF"]
+        : ["#7E5AF6", "#F7AE3B", "#62D7FF", "#FFFFFF"];
+    for (let i = 0; i < burstCount; i += 1) {
+        const piece = document.createElement("span");
+        piece.className = "confetti-piece";
+        piece.style.left = `${Math.random() * 100}%`;
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDuration = `${1800 + Math.random() * 1100}ms`;
+        piece.style.animationDelay = `${Math.random() * 180}ms`;
+        piece.style.setProperty("--drift", `${-90 + Math.random() * 180}px`);
+        piece.style.setProperty("--spin", `${200 + Math.random() * 520}deg`);
+        confettiLayerEl.appendChild(piece);
+        window.setTimeout(() => {
+            piece.remove();
+        }, 3300);
+    }
+}
+
+function stopResultConfetti() {
+    if (confettiLoopTimer) {
+        window.clearInterval(confettiLoopTimer);
+        confettiLoopTimer = null;
+    }
+    confettiLayerEl.innerHTML = "";
 }
 
 function backToStartOverlay() {
@@ -1470,6 +1808,7 @@ function backToStartOverlay() {
     combo = 0;
     gameTime = adminConfig.gameDuration;
     renderTopStatus();
+    stopResultConfetti();
     endOverlayEl.classList.add("hidden");
     startOverlayEl.classList.remove("hidden");
 }
