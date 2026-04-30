@@ -296,7 +296,7 @@
         <button id="quickRestartBtn" class="restart-btn">重新挑戰</button>
     </div>
     <div class="right-status">
-        <div class="status-box">時間: <span id="timeVal">60</span>s</div>
+        <div class="status-box">時間: <span id="timeVal">45</span>s</div>
         <div class="status-box">連擊: <span id="comboVal">0</span></div>
     </div>
 </div>
@@ -311,7 +311,7 @@
             <div class="guide-grid">
                 <div class="guide-row">📘 把左邊書本拖到右邊正確分類櫃。</div>
                 <div class="guide-row" id="scoreRuleRow">⭐ 每答對 +10 分，連續答對加更多分。</div>
-                <div class="guide-row" id="durationRuleRow">⏱️ 遊戲是 <strong>60 秒倒數</strong>，時間到就結算。</div>
+                <div class="guide-row" id="durationRuleRow">⏱️ 遊戲是 <strong>45 秒倒數</strong>，時間到就結算。</div>
                 <div class="guide-row" id="difficultyRow">🚀 分數越高，難度越高。</div>
             </div>
             <div class="guide-tip" id="guideTip">小提醒：放到分類櫃外不扣分，放心再試一次！</div>
@@ -492,7 +492,7 @@ const juniorBookTemplates = [
     { title: "歷史人物評析", cat: 600, difficulty: "advanced" }
 ];
 const DEFAULT_ADMIN_CONFIG = {
-    gameDuration: 60,
+    gameDuration: 45,
     scoring: {
         elementary: { baseScore: 10, comboStep: 2, wrongPenalty: 0 },
         junior: { baseScore: 9, comboStep: 1.5, wrongPenalty: 4 }
