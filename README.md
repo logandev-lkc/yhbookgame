@@ -7,6 +7,18 @@
 
 - [https://logandev-lkc.github.io/yhbookgame/](https://logandev-lkc.github.io/yhbookgame/)
 
+## PWA 安裝與離線使用
+
+- 本專案已支援 PWA，可安裝到平板主畫面使用。
+- 首次需有網路開啟一次，之後會快取核心檔案。
+- 在網路不穩或離線情境下，重新開啟仍可進入遊戲。
+- 若你更新了程式，重新整理一次可拿到最新版快取。
+
+### 平板安裝方式
+
+- iPad（Safari）：點分享按鈕 -> 加入主畫面
+- Android（Chrome）：右上選單 -> 安裝應用程式 / 加到主畫面
+
 ## 遊戲特色
 
 - 可自訂遊戲秒數（管理員設定）
