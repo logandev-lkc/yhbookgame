@@ -5,7 +5,7 @@
 
 ## 線上展示（GitHub Pages）
 
-- [https://logandev-lkc.github.io/yhbookgmae/](https://logandev-lkc.github.io/yhbookgmae/)
+- [https://logandev-lkc.github.io/yhbookgame/](https://logandev-lkc.github.io/yhbookgame/)
 
 ## 遊戲特色
 
