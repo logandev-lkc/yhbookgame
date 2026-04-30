@@ -32,6 +32,12 @@
         }
         .score-label { font-size: calc(13px * var(--text-scale)); color: #85502a; font-weight: bold; }
         .score-value { font-size: calc(28px * var(--text-scale)); color: #5f2f0e; font-weight: 900; line-height: 1; }
+        .group-value {
+            margin-top: 4px;
+            font-size: calc(12px * var(--text-scale));
+            color: #7a4a24;
+            font-weight: bold;
+        }
         .restart-btn {
             pointer-events: auto;
             border: none;
@@ -190,6 +196,7 @@
             .score-panel { min-width: 110px; padding: 6px 10px; border-radius: 12px; }
             .score-label { font-size: calc(11px * var(--text-scale)); }
             .score-value { font-size: calc(20px * var(--text-scale)); }
+            .group-value { font-size: calc(10px * var(--text-scale)); }
             .restart-btn { font-size: calc(12px * var(--text-scale)); padding: 6px 12px; }
             .status-box { font-size: calc(15px * var(--text-scale)); padding: 4px 10px; }
             .right-status .status-box { font-size: calc(12px * var(--text-scale)); }
@@ -213,6 +220,7 @@
         <div class="score-panel">
             <div class="score-label">得分 SCORE</div>
             <div class="score-value" id="scoreVal">0</div>
+            <div class="group-value" id="groupVal">目前組別：國小組</div>
         </div>
         <button id="quickRestartBtn" class="restart-btn">重新挑戰</button>
     </div>
@@ -354,6 +362,7 @@ const TEXT_SCALE = 1.15;
 const scaledFont = (size) => Math.round(size * TEXT_SCALE);
 
 const scoreEl = document.getElementById('scoreVal');
+const groupEl = document.getElementById('groupVal');
 const timeEl = document.getElementById('timeVal');
 const comboEl = document.getElementById('comboVal');
 const finalScoreEl = document.getElementById('finalScoreVal');
@@ -374,6 +383,24 @@ const modeNoteEl = document.getElementById('modeNote');
 const guideTipEl = document.getElementById('guideTip');
 const scoreRuleRowEl = document.getElementById('scoreRuleRow');
 const difficultyRowEl = document.getElementById('difficultyRow');
+
+function getBestScoreStorageKey() {
+    return gameMode === "junior" ? "libraryGameBestScore_junior" : "libraryGameBestScore_elementary";
+}
+
+function getCurrentModeBestScore() {
+    const modeKey = getBestScoreStorageKey();
+    const modeBest = Number(localStorage.getItem(modeKey) || 0);
+    if (gameMode === "elementary") {
+        const legacyBest = Number(localStorage.getItem("libraryGameBestScore") || 0);
+        return Math.max(modeBest, legacyBest);
+    }
+    return modeBest;
+}
+
+function refreshBestScoreDisplay() {
+    bestScoreEl.innerText = getCurrentModeBestScore();
+}
 
 function getCurrentStage() {
     if (gameMode === "junior") {
@@ -405,7 +432,7 @@ function getStageConfig() {
     if (stage === 2) {
         return { stage, showCategoryColor: false, showCategoryChip: true, showShelfHint: true, useBookIdInShelf: true, baseScore: 9, comboStep: 1.5, wrongPenalty: 4, advancedRatio: 0.4 };
     }
-    return { stage, showCategoryColor: false, showCategoryChip: true, showShelfHint: false, useBookIdInShelf: true, baseScore: 8, comboStep: 1.5, wrongPenalty: 5, advancedRatio: 0.75 };
+    return { stage, showCategoryColor: false, showCategoryChip: false, showShelfHint: false, useBookIdInShelf: true, baseScore: 8, comboStep: 1.5, wrongPenalty: 5, advancedRatio: 0.75 };
 }
 
 function pickTemplateByDifficulty(pool, advancedRatio) {
@@ -435,6 +462,7 @@ function updateModeUI() {
     difficultyRowEl.innerText = isJunior
         ? "🚀 0-50 全資訊；50-100 關分類色；100+ 關書櫃 hint。"
         : "🚀 0-50 全資訊；50+ 關掉分類色提示。";
+    refreshBestScoreDisplay();
 }
 
 function getLayoutMode() {
@@ -855,7 +883,7 @@ function handleEnd() {
                 combo += 1;
                 bestCombo = Math.max(bestCombo, combo);
                 let gain = stageConfig.baseScore + ((combo - 1) * stageConfig.comboStep);
-                if (gameMode === "junior" && stageConfig.stage === 4) {
+                if (gameMode === "junior" && stageConfig.stage === 3) {
                     gain += gameTime >= 20 ? 2 : 1;
                 }
                 score += Math.round(gain);
@@ -885,8 +913,10 @@ function handleEnd() {
 
 function renderTopStatus() {
     scoreEl.innerText = score;
+    groupEl.innerText = `目前組別：${gameMode === "junior" ? "國中組" : "國小組"}`;
     timeEl.innerText = gameTime;
     comboEl.innerText = combo;
+    refreshBestScoreDisplay();
 }
 
 function showToast(message, type = "success") {
@@ -932,8 +962,8 @@ function endGame() {
     }
     const total = correctCount + wrongCount;
     const accuracy = total === 0 ? 0 : Math.round((correctCount / total) * 100);
-    const bestScore = Math.max(score, Number(localStorage.getItem("libraryGameBestScore") || 0));
-    localStorage.setItem("libraryGameBestScore", String(bestScore));
+    const bestScore = Math.max(score, getCurrentModeBestScore());
+    localStorage.setItem(getBestScoreStorageKey(), String(bestScore));
 
     finalScoreEl.innerText = score;
     correctEl.innerText = correctCount;
@@ -998,7 +1028,7 @@ juniorModeBtnEl.addEventListener('click', () => {
 init();
 renderTopStatus();
 updateModeUI();
-bestScoreEl.innerText = Number(localStorage.getItem("libraryGameBestScore") || 0);
+refreshBestScoreDisplay();
 draw();
 
 </script>
