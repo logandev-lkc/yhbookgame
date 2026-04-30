@@ -153,6 +153,70 @@
             text-align: center;
             font-weight: bold;
         }
+        .secret-admin-trigger {
+            cursor: pointer;
+            user-select: none;
+        }
+        .admin-panel {
+            width: min(720px, 94vw);
+            max-height: 86vh;
+            overflow: auto;
+            text-align: left;
+        }
+        .admin-panel h3 {
+            margin: 0 0 8px;
+            color: #7b4218;
+            font-size: calc(22px * var(--text-scale));
+        }
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .admin-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .admin-field label {
+            font-size: calc(14px * var(--text-scale));
+            color: #633611;
+            font-weight: bold;
+        }
+        .admin-field input,
+        .admin-textarea {
+            border: 1px solid rgba(139, 69, 19, 0.35);
+            border-radius: 8px;
+            padding: 8px;
+            font-size: calc(14px * var(--text-scale));
+            font-family: "Microsoft JhengHei", sans-serif;
+        }
+        .admin-section-title {
+            margin: 14px 0 6px;
+            color: #7f4318;
+            font-weight: bold;
+            font-size: calc(15px * var(--text-scale));
+        }
+        .admin-textarea {
+            width: 100%;
+            min-height: 108px;
+            resize: vertical;
+            line-height: 1.4;
+            box-sizing: border-box;
+        }
+        .admin-help {
+            margin: 6px 0;
+            color: #6e3d18;
+            font-size: calc(12px * var(--text-scale));
+        }
+        .admin-error {
+            margin-top: 8px;
+            color: #9d1f1f;
+            font-size: calc(13px * var(--text-scale));
+            font-weight: bold;
+            min-height: 1.2em;
+        }
         .primary-btn {
             border: none;
             border-radius: 999px;
@@ -210,6 +274,7 @@
             .guide-tip { font-size: calc(13px * var(--text-scale)); margin-top: 8px; }
             .primary-btn { font-size: calc(16px * var(--text-scale)); padding: 9px 16px; }
             #toast { font-size: calc(15px * var(--text-scale)); bottom: 16px; }
+            .admin-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -234,13 +299,13 @@
 
 <div id="startOverlay" class="overlay">
     <div class="overlay-card">
-        <h2>小小圖書管理員</h2>
+        <h2 id="titleSecretTrigger" class="secret-admin-trigger">小小圖書管理員</h2>
         <div class="game-guide">
             <div class="guide-intro">準備好一起挑戰圖書分類任務了嗎？</div>
             <div class="guide-grid">
                 <div class="guide-row">📘 把左邊書本拖到右邊正確分類櫃。</div>
                 <div class="guide-row" id="scoreRuleRow">⭐ 每答對 +10 分，連續答對加更多分。</div>
-                <div class="guide-row">⏱️ 遊戲是 <strong>60 秒倒數</strong>，時間到就結算。</div>
+                <div class="guide-row" id="durationRuleRow">⏱️ 遊戲是 <strong>60 秒倒數</strong>，時間到就結算。</div>
                 <div class="guide-row" id="difficultyRow">🚀 分數越高，難度越高。</div>
             </div>
             <div class="guide-tip" id="guideTip">小提醒：放到分類櫃外不扣分，放心再試一次！</div>
@@ -265,6 +330,64 @@
         <p>歷史最高分：<span id="bestScoreVal">0</span></p>
         <div class="button-row">
             <button id="restartBtn" class="primary-btn">重新挑戰</button>
+        </div>
+    </div>
+</div>
+
+<div id="adminOverlay" class="overlay hidden">
+    <div class="overlay-card admin-panel">
+        <h3>管理員設定</h3>
+        <div class="admin-grid">
+            <div class="admin-field">
+                <label for="adminDurationInput">遊戲秒數</label>
+                <input id="adminDurationInput" type="number" min="20" max="300" step="5">
+            </div>
+        </div>
+
+        <div class="admin-section-title">國小組計分</div>
+        <div class="admin-grid">
+            <div class="admin-field">
+                <label for="adminEleBaseInput">答對基礎分</label>
+                <input id="adminEleBaseInput" type="number" min="1" max="50" step="1">
+            </div>
+            <div class="admin-field">
+                <label for="adminEleComboInput">連擊加分</label>
+                <input id="adminEleComboInput" type="number" min="0" max="20" step="0.5">
+            </div>
+            <div class="admin-field">
+                <label for="adminEleWrongInput">答錯扣分</label>
+                <input id="adminEleWrongInput" type="number" min="0" max="20" step="1">
+            </div>
+        </div>
+
+        <div class="admin-section-title">國中組計分</div>
+        <div class="admin-grid">
+            <div class="admin-field">
+                <label for="adminJunBaseInput">答對基礎分</label>
+                <input id="adminJunBaseInput" type="number" min="1" max="50" step="1">
+            </div>
+            <div class="admin-field">
+                <label for="adminJunComboInput">連擊加分</label>
+                <input id="adminJunComboInput" type="number" min="0" max="20" step="0.5">
+            </div>
+            <div class="admin-field">
+                <label for="adminJunWrongInput">答錯扣分</label>
+                <input id="adminJunWrongInput" type="number" min="0" max="20" step="1">
+            </div>
+        </div>
+
+        <div class="admin-section-title">國小組題庫（每行：書名|分類代號）</div>
+        <textarea id="adminEleQuestions" class="admin-textarea"></textarea>
+
+        <div class="admin-section-title">國中組題庫（每行：書名|分類代號|難度 basic/advanced）</div>
+        <textarea id="adminJunQuestions" class="admin-textarea"></textarea>
+        <div class="admin-help">分類代號請使用：300 科學、800 文學、900 藝術、600 史地。</div>
+        <div id="adminError" class="admin-error"></div>
+
+        <div class="button-row">
+            <button id="adminSaveBtn" class="primary-btn">儲存設定</button>
+            <button id="adminResetBtn" class="primary-btn">恢復預設</button>
+            <button id="adminCancelBtn" class="primary-btn">取消</button>
         </div>
     </div>
 </div>
@@ -338,6 +461,15 @@ const juniorBookTemplates = [
     { title: "朝代制度比較研究", cat: 600, difficulty: "advanced" },
     { title: "都市化與人口遷移", cat: 600, difficulty: "basic" }
 ];
+const DEFAULT_ADMIN_CONFIG = {
+    gameDuration: 60,
+    scoring: {
+        elementary: { baseScore: 10, comboStep: 2, wrongPenalty: 0 },
+        junior: { baseScore: 9, comboStep: 1.5, wrongPenalty: 4 }
+    }
+};
+const ADMIN_CONFIG_STORAGE_KEY = "libraryGameAdminConfig_v1";
+const ADMIN_QUESTION_STORAGE_KEY = "libraryGameQuestionBank_v1";
 
 /** 遊戲變數 **/
 const canvas = document.getElementById('gameCanvas');
@@ -358,6 +490,11 @@ let correctCount = 0;
 let wrongCount = 0;
 let lastBookTitle = "";
 let gameMode = "elementary";
+let adminConfig = structuredClone(DEFAULT_ADMIN_CONFIG);
+let questionBanks = {
+    elementary: structuredClone(elementaryBookTemplates),
+    junior: structuredClone(juniorBookTemplates)
+};
 const TEXT_SCALE = 1.15;
 const scaledFont = (size) => Math.round(size * TEXT_SCALE);
 
@@ -383,6 +520,209 @@ const modeNoteEl = document.getElementById('modeNote');
 const guideTipEl = document.getElementById('guideTip');
 const scoreRuleRowEl = document.getElementById('scoreRuleRow');
 const difficultyRowEl = document.getElementById('difficultyRow');
+const durationRuleRowEl = document.getElementById('durationRuleRow');
+const titleSecretTriggerEl = document.getElementById('titleSecretTrigger');
+const adminOverlayEl = document.getElementById('adminOverlay');
+const adminDurationInputEl = document.getElementById('adminDurationInput');
+const adminEleBaseInputEl = document.getElementById('adminEleBaseInput');
+const adminEleComboInputEl = document.getElementById('adminEleComboInput');
+const adminEleWrongInputEl = document.getElementById('adminEleWrongInput');
+const adminJunBaseInputEl = document.getElementById('adminJunBaseInput');
+const adminJunComboInputEl = document.getElementById('adminJunComboInput');
+const adminJunWrongInputEl = document.getElementById('adminJunWrongInput');
+const adminEleQuestionsEl = document.getElementById('adminEleQuestions');
+const adminJunQuestionsEl = document.getElementById('adminJunQuestions');
+const adminSaveBtnEl = document.getElementById('adminSaveBtn');
+const adminResetBtnEl = document.getElementById('adminResetBtn');
+const adminCancelBtnEl = document.getElementById('adminCancelBtn');
+const adminErrorEl = document.getElementById('adminError');
+let adminTapCount = 0;
+let adminTapResetTimer = null;
+
+function getCategoryMap() {
+    return new Map(categories.map((cat) => [cat.id, true]));
+}
+
+function normalizeBook(raw, isJunior) {
+    const cat = Number(raw.cat);
+    if (!raw.title || Number.isNaN(cat) || !getCategoryMap().has(cat)) return null;
+    const normalized = { title: String(raw.title).trim(), cat };
+    if (!normalized.title) return null;
+    if (isJunior) {
+        normalized.difficulty = raw.difficulty === "advanced" ? "advanced" : "basic";
+    }
+    return normalized;
+}
+
+function loadAdminData() {
+    try {
+        const rawConfig = localStorage.getItem(ADMIN_CONFIG_STORAGE_KEY);
+        if (rawConfig) {
+            const parsed = JSON.parse(rawConfig);
+            if (typeof parsed?.gameDuration === "number" && parsed.gameDuration >= 20 && parsed.gameDuration <= 300) {
+                adminConfig.gameDuration = Math.round(parsed.gameDuration);
+            }
+            const ele = parsed?.scoring?.elementary;
+            const jun = parsed?.scoring?.junior;
+            if (ele && typeof ele.baseScore === "number" && typeof ele.comboStep === "number" && typeof ele.wrongPenalty === "number") {
+                adminConfig.scoring.elementary = { baseScore: ele.baseScore, comboStep: ele.comboStep, wrongPenalty: ele.wrongPenalty };
+            }
+            if (jun && typeof jun.baseScore === "number" && typeof jun.comboStep === "number" && typeof jun.wrongPenalty === "number") {
+                adminConfig.scoring.junior = { baseScore: jun.baseScore, comboStep: jun.comboStep, wrongPenalty: jun.wrongPenalty };
+            }
+        }
+
+        const rawQuestions = localStorage.getItem(ADMIN_QUESTION_STORAGE_KEY);
+        if (rawQuestions) {
+            const parsed = JSON.parse(rawQuestions);
+            if (Array.isArray(parsed?.elementary)) {
+                const items = parsed.elementary.map((item) => normalizeBook(item, false)).filter(Boolean);
+                if (items.length > 0) questionBanks.elementary = items;
+            }
+            if (Array.isArray(parsed?.junior)) {
+                const items = parsed.junior.map((item) => normalizeBook(item, true)).filter(Boolean);
+                if (items.length > 0) questionBanks.junior = items;
+            }
+        }
+    } catch (e) {
+        console.warn("管理員設定載入失敗，改用預設值", e);
+    }
+}
+
+function serializeQuestionLines(items, isJunior) {
+    return items.map((item) => {
+        if (isJunior) return `${item.title}|${item.cat}|${item.difficulty || "basic"}`;
+        return `${item.title}|${item.cat}`;
+    }).join("\n");
+}
+
+function parseQuestionLines(text, isJunior) {
+    const lines = text.split("\n").map((line) => line.trim()).filter(Boolean);
+    if (lines.length === 0) return { error: "題庫不能是空的。" };
+    const categoryMap = getCategoryMap();
+    const books = [];
+    for (let i = 0; i < lines.length; i += 1) {
+        const parts = lines[i].split("|").map((part) => part.trim());
+        if ((!isJunior && parts.length < 2) || (isJunior && parts.length < 2)) {
+            return { error: `第 ${i + 1} 行格式錯誤。` };
+        }
+        const [title, catRaw, difficultyRaw] = parts;
+        const cat = Number(catRaw);
+        if (!title) return { error: `第 ${i + 1} 行書名是空的。` };
+        if (Number.isNaN(cat) || !categoryMap.has(cat)) return { error: `第 ${i + 1} 行分類代號無效。` };
+        const book = { title, cat };
+        if (isJunior) {
+            const difficulty = difficultyRaw === "advanced" ? "advanced" : "basic";
+            book.difficulty = difficulty;
+        }
+        books.push(book);
+    }
+    return { books };
+}
+
+function openAdminPanel() {
+    if (gameRunning) return;
+    adminErrorEl.innerText = "";
+    adminDurationInputEl.value = adminConfig.gameDuration;
+    adminEleBaseInputEl.value = adminConfig.scoring.elementary.baseScore;
+    adminEleComboInputEl.value = adminConfig.scoring.elementary.comboStep;
+    adminEleWrongInputEl.value = adminConfig.scoring.elementary.wrongPenalty;
+    adminJunBaseInputEl.value = adminConfig.scoring.junior.baseScore;
+    adminJunComboInputEl.value = adminConfig.scoring.junior.comboStep;
+    adminJunWrongInputEl.value = adminConfig.scoring.junior.wrongPenalty;
+    adminEleQuestionsEl.value = serializeQuestionLines(questionBanks.elementary, false);
+    adminJunQuestionsEl.value = serializeQuestionLines(questionBanks.junior, true);
+    adminOverlayEl.classList.remove("hidden");
+}
+
+function closeAdminPanel() {
+    adminOverlayEl.classList.add("hidden");
+}
+
+function handleSecretAdminTap() {
+    if (gameRunning) return;
+    adminTapCount += 1;
+    if (adminTapResetTimer) window.clearTimeout(adminTapResetTimer);
+    if (adminTapCount >= 4) {
+        adminTapCount = 0;
+        openAdminPanel();
+        return;
+    }
+    adminTapResetTimer = window.setTimeout(() => {
+        adminTapCount = 0;
+    }, 1200);
+}
+
+function saveAdminSettings() {
+    const gameDuration = Number(adminDurationInputEl.value);
+    const eleBaseScore = Number(adminEleBaseInputEl.value);
+    const eleComboStep = Number(adminEleComboInputEl.value);
+    const eleWrongPenalty = Number(adminEleWrongInputEl.value);
+    const junBaseScore = Number(adminJunBaseInputEl.value);
+    const junComboStep = Number(adminJunComboInputEl.value);
+    const junWrongPenalty = Number(adminJunWrongInputEl.value);
+
+    if (!Number.isFinite(gameDuration) || gameDuration < 20 || gameDuration > 300) {
+        adminErrorEl.innerText = "遊戲秒數請填 20~300。";
+        return;
+    }
+    const scoreValues = [eleBaseScore, eleComboStep, eleWrongPenalty, junBaseScore, junComboStep, junWrongPenalty];
+    if (scoreValues.some((v) => !Number.isFinite(v) || v < 0)) {
+        adminErrorEl.innerText = "計分設定請輸入有效數字。";
+        return;
+    }
+
+    const elementaryParse = parseQuestionLines(adminEleQuestionsEl.value, false);
+    if (elementaryParse.error) {
+        adminErrorEl.innerText = `國小組題庫：${elementaryParse.error}`;
+        return;
+    }
+    const juniorParse = parseQuestionLines(adminJunQuestionsEl.value, true);
+    if (juniorParse.error) {
+        adminErrorEl.innerText = `國中組題庫：${juniorParse.error}`;
+        return;
+    }
+
+    adminConfig = {
+        gameDuration: Math.round(gameDuration),
+        scoring: {
+            elementary: {
+                baseScore: eleBaseScore,
+                comboStep: eleComboStep,
+                wrongPenalty: Math.round(eleWrongPenalty)
+            },
+            junior: {
+                baseScore: junBaseScore,
+                comboStep: junComboStep,
+                wrongPenalty: Math.round(junWrongPenalty)
+            }
+        }
+    };
+    questionBanks = {
+        elementary: elementaryParse.books,
+        junior: juniorParse.books
+    };
+    localStorage.setItem(ADMIN_CONFIG_STORAGE_KEY, JSON.stringify(adminConfig));
+    localStorage.setItem(ADMIN_QUESTION_STORAGE_KEY, JSON.stringify(questionBanks));
+    updateModeUI();
+    renderTopStatus();
+    closeAdminPanel();
+    showToast("管理員設定已儲存", "success");
+}
+
+function resetAdminSettings() {
+    adminConfig = structuredClone(DEFAULT_ADMIN_CONFIG);
+    questionBanks = {
+        elementary: structuredClone(elementaryBookTemplates),
+        junior: structuredClone(juniorBookTemplates)
+    };
+    localStorage.removeItem(ADMIN_CONFIG_STORAGE_KEY);
+    localStorage.removeItem(ADMIN_QUESTION_STORAGE_KEY);
+    updateModeUI();
+    renderTopStatus();
+    closeAdminPanel();
+    showToast("已恢復預設設定", "success");
+}
 
 function getBestScoreStorageKey() {
     return gameMode === "junior" ? "libraryGameBestScore_junior" : "libraryGameBestScore_elementary";
@@ -414,25 +754,27 @@ function getCurrentStage() {
 function getStageConfig() {
     const stage = getCurrentStage();
     if (gameMode !== "junior") {
+        const eleScore = adminConfig.scoring.elementary;
         return {
             stage,
             showCategoryColor: stage === 1,
             showCategoryChip: true,
             showShelfHint: true,
             useBookIdInShelf: true,
-            baseScore: 10,
-            comboStep: 2,
-            wrongPenalty: 0,
+            baseScore: eleScore.baseScore,
+            comboStep: eleScore.comboStep,
+            wrongPenalty: eleScore.wrongPenalty,
             advancedRatio: 0
         };
     }
+    const junScore = adminConfig.scoring.junior;
     if (stage === 1) {
-        return { stage, showCategoryColor: true, showCategoryChip: true, showShelfHint: true, useBookIdInShelf: true, baseScore: 9, comboStep: 1.5, wrongPenalty: 2, advancedRatio: 0.1 };
+        return { stage, showCategoryColor: true, showCategoryChip: true, showShelfHint: true, useBookIdInShelf: true, baseScore: junScore.baseScore, comboStep: junScore.comboStep, wrongPenalty: junScore.wrongPenalty, advancedRatio: 0.1 };
     }
     if (stage === 2) {
-        return { stage, showCategoryColor: false, showCategoryChip: true, showShelfHint: true, useBookIdInShelf: true, baseScore: 9, comboStep: 1.5, wrongPenalty: 4, advancedRatio: 0.4 };
+        return { stage, showCategoryColor: false, showCategoryChip: true, showShelfHint: true, useBookIdInShelf: true, baseScore: junScore.baseScore, comboStep: junScore.comboStep, wrongPenalty: junScore.wrongPenalty, advancedRatio: 0.4 };
     }
-    return { stage, showCategoryColor: false, showCategoryChip: false, showShelfHint: false, useBookIdInShelf: true, baseScore: 8, comboStep: 1.5, wrongPenalty: 5, advancedRatio: 0.75 };
+    return { stage, showCategoryColor: false, showCategoryChip: false, showShelfHint: false, useBookIdInShelf: true, baseScore: junScore.baseScore, comboStep: junScore.comboStep, wrongPenalty: junScore.wrongPenalty, advancedRatio: 0.75 };
 }
 
 function pickTemplateByDifficulty(pool, advancedRatio) {
@@ -457,8 +799,9 @@ function updateModeUI() {
         ? "小提醒：國中組答錯會扣分，先判斷再放置會更穩。"
         : "小提醒：放到分類櫃外不扣分，放心再試一次！";
     scoreRuleRowEl.innerText = isJunior
-        ? "⭐ 答對有連擊加分，答錯會扣分。"
-        : "⭐ 每答對 +10 分，連續答對加更多分。";
+        ? `⭐ 答對 +${adminConfig.scoring.junior.baseScore}，連擊每次 +${adminConfig.scoring.junior.comboStep}，答錯 -${adminConfig.scoring.junior.wrongPenalty}。`
+        : `⭐ 答對 +${adminConfig.scoring.elementary.baseScore}，連擊每次 +${adminConfig.scoring.elementary.comboStep}，答錯 -${adminConfig.scoring.elementary.wrongPenalty}。`;
+    durationRuleRowEl.innerHTML = `⏱️ 遊戲是 <strong>${adminConfig.gameDuration} 秒倒數</strong>，時間到就結算。`;
     difficultyRowEl.innerText = isJunior
         ? "🚀 0-50 全資訊；50-100 關分類色；100+ 關書櫃 hint。"
         : "🚀 0-50 全資訊；50+ 關掉分類色提示。";
@@ -565,7 +908,7 @@ function init() {
 function spawnBook() {
     if (!gameRunning) return;
     const stageConfig = getStageConfig();
-    const activePool = gameMode === "junior" ? juniorBookTemplates : elementaryBookTemplates;
+    const activePool = gameMode === "junior" ? questionBanks.junior : questionBanks.elementary;
     const availableBooks = activePool.filter(book => book.title !== lastBookTitle);
     const sourceBooks = availableBooks.length > 0 ? availableBooks : activePool;
     const template = pickTemplateByDifficulty(sourceBooks, stageConfig.advancedRatio);
@@ -936,7 +1279,7 @@ function startGame() {
     correctCount = 0;
     wrongCount = 0;
     lastBookTitle = "";
-    gameTime = 60;
+    gameTime = adminConfig.gameDuration;
     gameRunning = true;
     isDragging = false;
     startOverlayEl.classList.add("hidden");
@@ -984,7 +1327,7 @@ function backToStartOverlay() {
     }
     score = 0;
     combo = 0;
-    gameTime = 60;
+    gameTime = adminConfig.gameDuration;
     renderTopStatus();
     endOverlayEl.classList.add("hidden");
     startOverlayEl.classList.remove("hidden");
@@ -1013,6 +1356,10 @@ window.addEventListener('resize', init);
 startBtnEl.addEventListener('click', startGame);
 restartBtnEl.addEventListener('click', backToStartOverlay);
 quickRestartBtnEl.addEventListener('click', backToStartOverlay);
+titleSecretTriggerEl.addEventListener('click', handleSecretAdminTap);
+adminCancelBtnEl.addEventListener('click', closeAdminPanel);
+adminSaveBtnEl.addEventListener('click', saveAdminSettings);
+adminResetBtnEl.addEventListener('click', resetAdminSettings);
 elementaryModeBtnEl.addEventListener('click', () => {
     if (gameRunning) return;
     gameMode = "elementary";
@@ -1025,6 +1372,7 @@ juniorModeBtnEl.addEventListener('click', () => {
 });
 
 // 啟動
+loadAdminData();
 init();
 renderTopStatus();
 updateModeUI();
