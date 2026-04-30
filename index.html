@@ -79,6 +79,42 @@
         .overlay-card h2 { margin: 0 0 12px; color: #8B4513; font-size: calc(32px * var(--text-scale)); }
         .overlay-card p { margin: 6px 0; color: #5d3b20; line-height: 1.5; font-size: calc(17px * var(--text-scale)); }
         .overlay-card .result-line { font-weight: bold; font-size: calc(18px * var(--text-scale)); }
+        .game-guide {
+            margin: 12px auto 0;
+            width: min(520px, 88vw);
+            text-align: left;
+        }
+        .guide-intro {
+            text-align: center;
+            font-size: calc(16px * var(--text-scale));
+            color: #6b3d1a;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .guide-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .guide-row {
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(139, 69, 19, 0.2);
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-size: calc(15px * var(--text-scale));
+            line-height: 1.45;
+        }
+        .guide-tip {
+            margin-top: 10px;
+            background: rgba(255, 235, 199, 0.75);
+            border: 1px dashed rgba(139, 69, 19, 0.4);
+            border-radius: 12px;
+            padding: 8px 10px;
+            font-size: calc(15px * var(--text-scale));
+            color: #6a3c16;
+            text-align: center;
+            font-weight: bold;
+        }
         .button-row { margin-top: 16px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
         .primary-btn {
             border: none;
@@ -130,6 +166,10 @@
             .overlay-card h2 { font-size: calc(22px * var(--text-scale)); }
             .overlay-card p { font-size: calc(14px * var(--text-scale)); }
             .overlay-card .result-line { font-size: calc(16px * var(--text-scale)); }
+            .guide-intro { font-size: calc(14px * var(--text-scale)); margin-bottom: 8px; }
+            .guide-grid { grid-template-columns: 1fr; gap: 6px; }
+            .guide-row { font-size: calc(13px * var(--text-scale)); padding: 8px 9px; }
+            .guide-tip { font-size: calc(13px * var(--text-scale)); margin-top: 8px; }
             .primary-btn { font-size: calc(16px * var(--text-scale)); padding: 9px 16px; }
             #toast { font-size: calc(15px * var(--text-scale)); bottom: 16px; }
         }
@@ -156,8 +196,16 @@
 <div id="startOverlay" class="overlay">
     <div class="overlay-card">
         <h2>小小圖書管理員</h2>
-        <p>把書拖曳到正確分類櫃，越快越準越高分！</p>
-        <p>正確 +10 分，連擊每層額外 +2 分；錯誤會重置連擊。</p>
+        <div class="game-guide">
+            <div class="guide-intro">準備好一起挑戰圖書分類任務了嗎？</div>
+            <div class="guide-grid">
+                <div class="guide-row">📘 把左邊書本拖到右邊正確分類櫃。</div>
+                <div class="guide-row">⭐ 每答對 +10 分，連續答對加更多分。</div>
+                <div class="guide-row">⏱️ 遊戲是 <strong>60 秒倒數</strong>，時間到就結算。</div>
+                <div class="guide-row">🚀 分數越高，難度越高。</div>
+            </div>
+            <div class="guide-tip">小提醒：放到分類櫃外不扣分，放心再試一次！</div>
+        </div>
         <div class="button-row">
             <button id="startBtn" class="primary-btn">開始遊戲</button>
         </div>
@@ -354,14 +402,23 @@ function spawnBook() {
     const bookW = gameConfig.bookW;
     const bookH = gameConfig.bookH;
     const leftAreaWidth = width * gameConfig.shelfXRatio;
-    const safeTop = gameConfig.mode === "tablet" ? 118 : 100;
-    const safeBottom = height - 28;
-    const preferredX = width * gameConfig.bookStartXRatio;
-    const preferredY = height * gameConfig.bookStartYRatio;
-    const tabletCenteredX = (leftAreaWidth - bookW) / 2;
-    const baseX = gameConfig.mode === "tablet" ? tabletCenteredX : preferredX;
-    const spawnX = Math.min(Math.max(24, baseX), Math.max(24, leftAreaWidth - bookW - 24));
-    const spawnY = Math.min(Math.max(safeTop, preferredY), Math.max(safeTop, safeBottom - bookH));
+    const sidePadding = gameConfig.mode === "mobile" ? 12 : 24;
+    const safeTop = gameConfig.mode === "mobile" ? 92 : 108;
+    const safeBottom = height - (gameConfig.mode === "mobile" ? 22 : 28);
+
+    // 全尺寸採用左側可用區塊的水平置中，避免不同螢幕偏位
+    const centeredX = (leftAreaWidth - bookW) / 2;
+    const spawnX = Math.min(
+        Math.max(sidePadding, centeredX),
+        Math.max(sidePadding, leftAreaWidth - bookW - sidePadding)
+    );
+
+    // 垂直位置盡量落在左側區塊視覺中心，並避開頂部 UI
+    const preferredY = (safeTop + (safeBottom - bookH)) / 2 + (height * 0.06);
+    const spawnY = Math.min(
+        Math.max(safeTop, preferredY),
+        Math.max(safeTop, safeBottom - bookH)
+    );
     currentBook = {
         ...template,
         x: spawnX,
@@ -519,6 +576,7 @@ function draw() {
         let titleFontSize = Math.max(isMobile ? 12 : 13, gameConfig.bookTitleFont + 1);
         const minFontSize = isMobile ? 9 : 10;
         const lines = [];
+        const breakAfterChars = new Set(["，", "、", "。", "：", "；", "！", "？", ",", ".", "!", "?", "）", ")", "】", "」", "』"]);
 
         while (titleFontSize >= minFontSize) {
             lines.length = 0;
@@ -529,8 +587,21 @@ function draw() {
                 if (ctx.measureText(next).width <= maxTextWidth) {
                     current = next;
                 } else {
-                    lines.push(current);
-                    current = ch;
+                    // 優先在標點後換行，讓中文斷句更自然
+                    let splitAt = -1;
+                    for (let i = current.length - 1; i >= 1; i--) {
+                        if (breakAfterChars.has(current[i])) {
+                            splitAt = i + 1;
+                            break;
+                        }
+                    }
+                    if (splitAt > 0 && splitAt < current.length) {
+                        lines.push(current.slice(0, splitAt));
+                        current = current.slice(splitAt) + ch;
+                    } else {
+                        lines.push(current);
+                        current = ch;
+                    }
                     if (lines.length === maxLines) break;
                 }
             }
@@ -540,6 +611,14 @@ function draw() {
         }
 
         if (lines.length > maxLines) lines.length = maxLines;
+        // 避免最後一行只剩 1 個字，視覺上比較不突兀
+        if (lines.length >= 2) {
+            const lastIdx = lines.length - 1;
+            if (lines[lastIdx].length === 1 && lines[lastIdx - 1].length >= 3) {
+                lines[lastIdx] = lines[lastIdx - 1].slice(-1) + lines[lastIdx];
+                lines[lastIdx - 1] = lines[lastIdx - 1].slice(0, -1);
+            }
+        }
         if (lines.join("").length < title.length && lines.length > 0) {
             let last = lines[lines.length - 1];
             while (last.length > 0 && ctx.measureText(`${last}…`).width > maxTextWidth) {
@@ -710,6 +789,22 @@ function endGame() {
     endOverlayEl.classList.remove("hidden");
 }
 
+function backToStartOverlay() {
+    gameRunning = false;
+    isDragging = false;
+    currentBook = null;
+    if (timerId) {
+        window.clearInterval(timerId);
+        timerId = null;
+    }
+    score = 0;
+    combo = 0;
+    gameTime = 60;
+    renderTopStatus();
+    endOverlayEl.classList.add("hidden");
+    startOverlayEl.classList.remove("hidden");
+}
+
 // 事件監聽
 window.addEventListener('mousedown', handleStart);
 window.addEventListener('mousemove', handleMove);
@@ -731,8 +826,8 @@ window.addEventListener('touchend', handleEnd);
 window.addEventListener('touchcancel', handleEnd);
 window.addEventListener('resize', init);
 startBtnEl.addEventListener('click', startGame);
-restartBtnEl.addEventListener('click', startGame);
-quickRestartBtnEl.addEventListener('click', startGame);
+restartBtnEl.addEventListener('click', backToStartOverlay);
+quickRestartBtnEl.addEventListener('click', backToStartOverlay);
 
 // 啟動
 init();
